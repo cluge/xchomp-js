@@ -485,14 +485,11 @@ export const pdie9_bits = [
    0x00, 0x00, 0x00, 0xfe, 0x00, 0xfe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
 
-const canvas = document.getElementById('gameCanvas', { alpha: true });
-const ctx = canvas.getContext('2d');
-
-// ========== ФУНКЦИЯ ОТРИСОВКИ БИТМАПА (ЗАМЕНА XCopyPlane) ==========
+// ========== BITMAP DRAWING FUNCTION (REPLACEMENT FOR XCopyPlane) ==========
 const bitmapCache = new Map();
 
 export function drawBitmap(bits, width, height, destX, destY) {
-   const key = `${bits.join(',')}:${width}:${height}`;
+   const key = bits;
    let bitmap = bitmapCache.get(key);
 
    if (bitmap instanceof ImageBitmap) {
@@ -562,6 +559,10 @@ export function clearRect(x1, y1, x2, y2) {
 
 import * as xc from './xchomp.js';
 
+/*
+ * Flash the entire screen using the "difference" composite operation.
+ * Used during the end-of-level sequence.
+ */
 export function flash() {
    ctx.save();
    ctx.globalCompositeOperation = 'difference';

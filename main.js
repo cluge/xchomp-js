@@ -34,7 +34,9 @@ const screens = [
 /*
  * The Animation Loop
  */
-async function game_loop() {
+let tickStartTime = 0;
+
+async function game_proc() {
     if (!game_active || isPaused) return;
 
     xc.state.count = (xc.state.count + 1) & 0x0f;
@@ -111,7 +113,11 @@ async function game_loop() {
         if (animationFrame) cancelAnimationFrame(animationFrame);
         await new Promise(resolve => setTimeout(resolve, 1000));
         cnct.eat_end();
+        animationFrame = requestAnimationFrame(game_loop);
     }
+    // setTimeout(() => {
+    //     animationFrame = requestAnimationFrame(game_loop);
+    // }, frame_delay);
 
     // Offscreen Figure Overlay
     maze.draw_maze();
@@ -147,9 +153,25 @@ async function game_loop() {
         return;
     }
 
-    setTimeout(() => {
-        animationFrame = requestAnimationFrame(game_loop);
-    }, frame_delay);
+    // setTimeout(() => {
+    //     animationFrame = requestAnimationFrame(game_loop);
+    // }, frame_delay);
+    // animationFrame = requestAnimationFrame(() => {
+    //     const curTime = Date.now()
+    //     if (curTime - tickStartTime >= frame_delay) {
+    //         tickStartTime += frame_delay;
+    //         game_proc();
+    //     }
+    // });
+}
+
+function game_loop() {
+    const curTime = Date.now()
+    if (curTime - tickStartTime >= frame_delay) {
+        tickStartTime += frame_delay;
+        game_proc();
+    }
+    animationFrame = requestAnimationFrame(game_loop);
 }
 
 /*
@@ -173,6 +195,7 @@ function new_life() {
 
     props.get_ready().then(() => {
         game_active = true;
+        tickStartTime = Date.now();
         animationFrame = requestAnimationFrame(game_loop);
     });
 }
@@ -249,12 +272,20 @@ async function start_demo() {
             // any other key starts the game
             const key = e.key;
             if (key && !['Control', 'Alt', 'Shift', 'Meta', 'OS'].includes(key)) {
+                window.removeEventListener('pointerdown', onPointerDown);
                 window.removeEventListener('keydown', onKeyDown);
                 window.addEventListener('keydown', handleKeyDown);
                 resolve('start');
             }
         };
+        const onPointerDown = (e) => {
+            window.removeEventListener('pointerdown', onPointerDown);
+            window.removeEventListener('keydown', onKeyDown);
+            window.addEventListener('keydown', handleKeyDown);
+            resolve('start');
+        };
         window.addEventListener('keydown', onKeyDown);
+        window.addEventListener('pointerdown', onPointerDown);
     }).then((result) => {
         if (result === 'start') {
             start_game();
@@ -265,38 +296,42 @@ async function start_demo() {
 let isPaused = false;
 
 function handleKeyDown(e) {
-    // Q in active game: return to demo (physical key)
-    if (e.code === 'KeyQ') {
+    // Q in active game: return to demo
+    if (e.key === 'q' || e.key === 'Q') {
         e.preventDefault();
         start_demo();
         return;
     }
 
     let mappedKey = null;
-    // use e.code for physical keys
-    switch (e.code) {
+    switch (e.key) {
         case 'ArrowUp':
-        case 'KeyW':
+        case 'w':
+        case 'W':
             mappedKey = 'ArrowUp';
             break;
         case 'ArrowDown':
-        case 'KeyS':
+        case 's':
+        case 'S':
             mappedKey = 'ArrowDown';
             break;
         case 'ArrowLeft':
-        case 'KeyA':
+        case 'a':
+        case 'A':
             mappedKey = 'ArrowLeft';
             break;
         case 'ArrowRight':
-        case 'KeyD':
+        case 'd':
+        case 'D':
             mappedKey = 'ArrowRight';
             break;
-        case 'Space':
+        case ' ':
             e.preventDefault();
             isPaused = !isPaused;
             props.pause_seq(isPaused);
             if (!isPaused) {
-                animationFrame = requestAnimationFrame(game_loop);
+                tickStartTime = Date.now();
+                animationFrame = requestAnimationFrame(game_proc);
             }
             break;
         default:
@@ -309,7 +344,59 @@ function handleKeyDown(e) {
     }
 }
 
-async function init(canvas) {
+let touchStartX = 0;
+let touchStartY = 0;
+let touchStartTime = 0;
+const minSwipeDistance = 20;
+
+window.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+    touchStartTime = Date.now(); // Запоминаем время касания
+}, { passive: false });
+
+window.addEventListener('touchend', (e) => {
+    const touchEndTime = Date.now();
+    const touchDuration = touchEndTime - touchStartTime;
+
+    const touchEndX = e.changedTouches[0].screenX;
+    const touchEndY = e.changedTouches[0].screenY;
+
+    const dx = touchEndX - touchStartX;
+    const dy = touchEndY - touchStartY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // 1. Если игра в демо-режиме — любой тап/свайп запускает игру
+    if (!game_active) {
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+        return;
+    }
+
+    // 2. Если это короткий тап (меньше 200мс и почти без движения) — ПАУЗА
+    if (touchDuration < 200 && distance < 10) {
+        isPaused = !isPaused;
+        props.pause_seq(isPaused);
+        if (!isPaused) {
+            animationFrame = requestAnimationFrame(game_proc);
+        }
+        return;
+    }
+
+    // 3. Если это свайп — ПОВОРОТ
+    if (distance > minSwipeDistance) {
+        if (Math.abs(dx) > Math.abs(dy)) {
+            xc.state.last_key = dx > 0 ? 'ArrowRight' : 'ArrowLeft';
+        } else {
+            xc.state.last_key = dy > 0 ? 'ArrowDown' : 'ArrowUp';
+        }
+    }
+}, { passive: false });
+
+window.addEventListener('touchmove', (e) => {
+    if (game_active) e.preventDefault();
+}, { passive: false });
+
+async function init() {
     await bm.initFont();
 
     resources.create_pac();
@@ -318,7 +405,5 @@ async function init(canvas) {
 
     start_demo();
 }
-
-const infoDiv = document.getElementById('statusInfo');
 
 init();
