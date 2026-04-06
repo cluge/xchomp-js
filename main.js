@@ -110,14 +110,13 @@ async function game_proc() {
     }
 
     if (xc.state.isEatScore) {
-        if (animationFrame) cancelAnimationFrame(animationFrame);
+        // if (animationFrame) cancelAnimationFrame(animationFrame);
+        cancelAnimationFrame(animationFrame);
         await new Promise(resolve => setTimeout(resolve, 1000));
         cnct.eat_end();
+        tickStartTime = Date.now();
         animationFrame = requestAnimationFrame(game_loop);
     }
-    // setTimeout(() => {
-    //     animationFrame = requestAnimationFrame(game_loop);
-    // }, frame_delay);
 
     // Offscreen Figure Overlay
     maze.draw_maze();
@@ -152,17 +151,6 @@ async function game_proc() {
         new_screen();
         return;
     }
-
-    // setTimeout(() => {
-    //     animationFrame = requestAnimationFrame(game_loop);
-    // }, frame_delay);
-    // animationFrame = requestAnimationFrame(() => {
-    //     const curTime = Date.now()
-    //     if (curTime - tickStartTime >= frame_delay) {
-    //         tickStartTime += frame_delay;
-    //         game_proc();
-    //     }
-    // });
 }
 
 function game_loop() {
@@ -171,7 +159,9 @@ function game_loop() {
         tickStartTime += frame_delay;
         game_proc();
     }
-    animationFrame = requestAnimationFrame(game_loop);
+    if (!xc.state.isEatScore) {
+        animationFrame = requestAnimationFrame(game_loop);
+    }
 }
 
 /*
