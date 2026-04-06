@@ -485,6 +485,9 @@ export const pdie9_bits = [
    0x00, 0x00, 0x00, 0xfe, 0x00, 0xfe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
 
+const canvas = document.getElementById('gameCanvas', { alpha: true });
+const ctx = canvas.getContext('2d');
+
 // ========== BITMAP DRAWING FUNCTION (REPLACEMENT FOR XCopyPlane) ==========
 const bitmapCache = new Map();
 
