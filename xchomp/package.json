@@ -1,0 +1,17 @@
+{
+  "name": "xchomp",
+  "version": "1.0.0",
+  "description": "Xchomp, Version 1.0 \t\t\t-------------------",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "vite": "^8.0.4",
+    "vite-plugin-singlefile": "^2.3.2"
+  }
+}

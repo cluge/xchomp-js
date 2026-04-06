@@ -1,0 +1,12 @@
+INCLUDES = -I$(TOP) -I$(TOP)/X11
+LOCAL_LIBRARIES = $(XLIB)
+
+SRCS= contact.c demo.c drivers.c main.c maze.c props.c resources.c status.c
+OBJS= contact.o demo.o drivers.o main.o maze.o props.o resources.o status.o
+
+INSTALLFLAGS = $(INSTKMEMFLAGS)
+
+all: xchomp
+
+SingleProgramTarget(xchomp,$(OBJS),,$(LOCAL_LIBRARIES))
+

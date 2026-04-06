@@ -1,0 +1,85 @@
+
+			Xchomp, Version 1.0
+			-------------------
+
+COMPILING THE PROGRAM
+
+Xchomp has been tested on the following machines:
+
+	-- Sun 3/50, 3/75, 3/60, 386i
+	-- DEC VAXstation 2000, VAXstation 3100
+	-- Stellar
+
+Here is a performance chart:
+
+Machine			Monochrome			Color
+-------			----------			-----
+
+Sun 3/50, 3/75	   -->  A BIT SLOW			N/A
+Sun 3/60	   -->  RUNS NICELY			N/A
+Sun 386i		N/A				too slow
+
+VAXstation 2000		too slow			too slow
+VAXstation 3100    -->	SCREAMS!		   -->	SCREAMS!
+
+Stellar			N/A			   -->	SCREAMS!
+
+
+The program can be compiled in two ways -- the normal way, which
+results in the program running at maximum speed, which is way too
+fast on systems like the Stellar and the VAXstation 3100, but just
+right for the Sun 3/60.  The other way is to add "-DFRAME_DELAY=xxxxx"
+to the CFLAGS in the Makefile.  This causes a delay of the specified
+number of microseconds between each frame of motion.  This delay should
+be 20,000 microseconds or under.  Adding "-DFRAME_DELAY=20000" works
+beautifully for the VAXstation 3100 and the Stellar.
+
+If you're porting xchomp to another machine, I suggest you compile it
+without the "-DFRAME_DELAY=xxxxx", and if the result is too fast, then
+try several values for the delay.
+
+RUNNING THE PROGRAM
+
+First off, let me just state that this program is to be run with ALL
+OTHER PROCESSES ASLEEP!  Even so, on my 3/60, there are times when
+the animation gets choppy and uneven for a while.  This is probably
+due to some background process waking up and doing something.  Don't
+expect perfectly smooth motion under the X Window System, and don't
+even try to play the game while compiling something in the background.
+And if you're a perfectionist, then get rid of the second hand on your
+xclock!  I'm serious.
+
+If you're using a window manager such as TWM, in which the input focus
+belongs to the window containing the pointer, there's something to consider.
+On monochrome Suns, it's best to force the focus on the xchomp window and
+get the pointer out of there before playing the game.  This is because if
+the pointer is in the middle of the window, it'll blink during each motion
+cycle and cut the performance in half.  Another solution is to place the
+pointer at the VERY BOTTOM of the window, below the little icons representing
+the number of lives left.  If you iconify xchomp, and bring it back, it comes
+back in a paused state, so you can place the pointer back at the bottom of
+the window before you continue.  This whole thing doesn't seem to be a
+problem on monochrome VAXstations and color systems.  I'll try to find
+a better solution for the next posting.
+
+NOTES TO PROGRAMMERS
+
+Xchomp uses pure Xlib, without toolkits, widgets, etc.  This is mainly
+because I don't know anything about toolkits, widgets, etc.  In fact,
+this program started out as an experiment in X Window System programming;
+I didn't know anything about that either.  While making this game, I always
+had an open copy of the Xlib Reference Manual and the Xlib Programming Manual
+at my side.
+
+If you're going to be reading or modifying my code, I must apologize for
+some of the 1- and 2-letter global variable names.  This whole thing started
+as a tiny program which bounced circles around in a window.  I wasn't too
+careful with the variable names, but otherwise the code should be fairly
+clear.  Sorry about the goto's in main().
+
+---
++--------------------+-----------------------+-------------------------------+
+|                    |  Polygen Corporation  |           UUCP:               |
+|  Jerry J. Shekhel  |   Waltham, MA 02254   |  {princeton, mit-eddie,       |
+|                    |    (617) 890-2888     |  buita, sunne}!polygen!jerry  |
++--------------------+-----------------------+-------------------------------+
