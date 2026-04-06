@@ -2,7 +2,7 @@
 
 ![XChomp Gameplay Preview](xchomp.gif)
 
-### [🎮 Играть в браузере (Play Online)](https://github.io)
+### [🎮 Play Online](https://cluge.github.io/xchomp-js/xchomp.html)
 
 Classic Pac-Man™-style arcade game, ported from Jerry J. Shekhel's original X11 version (1990) to modern JavaScript/Canvas.  
 The game is fully self‑contained in a single HTML file (`xchomp.html`) – no external dependencies, no server required.
