@@ -386,6 +386,21 @@ window.addEventListener('touchmove', (e) => {
     if (game_active) e.preventDefault();
 }, { passive: false });
 
+/*
+ * Auto-pause when the user switches to another tab, minimizes the
+ * browser, or hides it in the tray.  Behaves exactly as if the
+ * player pressed Space — the game stays paused until they unpause
+ * manually.
+ */
+document.addEventListener('visibilitychange', () => {
+    if (!game_active || isPaused) return;
+
+    if (document.hidden) {
+        isPaused = true;
+        props.pause_seq(true);
+    }
+});
+
 async function init() {
     await bm.initFont();
 
