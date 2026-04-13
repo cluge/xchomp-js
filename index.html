@@ -6,45 +6,162 @@
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
     <title>XCHOMP</title>
-    <link rel="icon"
-        href="data:image/x-icon;base64,AAABAAEAICAAAAEAGACoDAAAFgAAACgAAAAgAAAAQAAAAAEAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////8AAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAD///////8AAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////8AAAAAAAAAAAAAAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////////////////////8AAAAAAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////////////////////8AAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////////////////////8AAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAD///////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////////////////8AAAAAAAD///8AAAD///////8AAAD///8AAAAAAAD///////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////////////////8AAAD///8AAAD///////8AAAD///8AAAD///////////////////////////8AAAAAAAAAAAD///8AAAAAAAAAAAAAAAAAAAAAAAD///////////////////////////8AAAD///8AAAD///////8AAAD///8AAAD///////////////////////////8AAAAAAAD///////////8AAAAAAAAAAAAAAAAAAAAAAAD///////////////////////8AAAD///8AAAD///////8AAAD///8AAAD///////////////////////////8AAAAAAAAAAAD///8AAAAAAAAAAAAAAAAAAAAAAAD///////////////////////////8AAAD///8AAAD///////8AAAD///8AAAAAAAD///////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////////////////8AAAD///8AAAD///////8AAAD///8AAAAAAAAAAAD///////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////////////////8AAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////////////////////8AAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////////////////////8AAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////////////////////8AAAAAAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAD///////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////8AAAAAAAAAAAAAAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAD///////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAD///////8AAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAD///////8AAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAD///////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==" />
     <style>
         body {
             margin: 0;
             padding: 0;
             background: #000;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
             height: 100vh;
-            overflow: hidden;
-            touch-action: none;
-            position: fixed;
             width: 100%;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, sans-serif;
+            color: white;
+            user-select: none;
+            touch-action: none;
         }
 
-        .container {
-            text-align: center;
+        /* Три равные секции: верх, центр, низ */
+        .section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+        }
+
+        /* Центр с канвасом не растягивается слишком сильно */
+        .game-area {
+            flex: 0 0 auto;
         }
 
         canvas {
             display: block;
             width: 672px;
-            max-width: 100%;
+            max-width: 95vw;
             height: auto;
             image-rendering: pixelated;
-            margin: 0 auto;
-            background: white;
+            background: var(--bg, #fff);
             touch-action: none;
             user-select: none;
-            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Кнопки пресетов (Верх) */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: #333;
+            border: 1px solid #555;
+            color: #ccc;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .btn:active {
+            background: #555;
+        }
+
+        /* Блок управления скоростью (Низ) */
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: #1a1a1a;
+            padding: 15px 30px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .speed-btn {
+            background: #444;
+            border: 2px solid #00ff41 !important;
+            color: white;
+            width: 40px;
+            height: 40px;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+        }
+
+        #delayDisplay {
+            font-size: 32px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            /* Чтобы цифры не прыгали */
+            color: #00ff41;
+            /* Тот самый зеленый для современности */
+            min-width: 70px;
+            text-align: center;
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        .btn-split-bw {
+            background: linear-gradient(90deg, #fff 50%, #000 50%);
+        }
+
+        .btn-split-bw-inv {
+            background: linear-gradient(90deg, #000 50%, #fff 50%) !important;
+        }
+
+        .btn-green {
+            /* Фон слева (темный), Спрайты справа (светлый) */
+            background: linear-gradient(90deg, #00220a 50%, #00cc33 50%) !important;
+        }
+
+        .btn-green-inv {
+            background: linear-gradient(90deg, #00cc33 50%, #00220a 50%) !important;
+        }
+
+        .btn-material {
+            /* Фон слева (темно-синий), Спрайты справа (зеленый) */
+            background: linear-gradient(90deg, #102027 50%, #66BB6A 50%) !important;
+        }
+
+        .btn-material-inv {
+            background: linear-gradient(90deg, #66BB6A 50%, #102027 50%) !important;
+        }
+
+        .speed-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            filter: grayscale(1);
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
+    <div class="section">
+        <div class="section">
+            <div class="speed-control">
+                <button class="speed-btn btn-split-bw"></button>
+                <button class="speed-btn btn-green"></button>
+                <button class="speed-btn btn-material"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section game-area">
         <canvas id="gameCanvas" width="336" height="274"></canvas>
+    </div>
+
+    <div class="section">
+        <div class="speed-control">
+            <button class="speed-btn" id="decSpeed">−</button>
+            <div id="delayDisplay">033</div>
+            <button class="speed-btn" id="incSpeed">+</button>
+        </div>
     </div>
     <img id="fontImage" src="font.png" style="display: none;">
     <script type="module" src="main.js"></script>

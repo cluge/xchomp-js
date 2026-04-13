@@ -217,6 +217,7 @@ function new_screen() {
  * Start a new game (after demo)
  */
 function start_game() {
+    bm.toggleThemeButtons(false);
     // demo: initialize game
     xc.state.lives = 3;
     xc.state.level = -1;
@@ -231,6 +232,7 @@ function start_game() {
  * Display the title screen and wait for a key to start
  */
 async function start_demo() {
+    bm.toggleThemeButtons(true);
     game_active = false;
     if (animationFrame) cancelAnimationFrame(animationFrame);
     window.removeEventListener('keydown', handleKeyDown);
@@ -401,7 +403,7 @@ document.addEventListener('visibilitychange', () => {
     }
 });
 
-async function init() {
+export async function init() {
     await bm.initFont();
 
     resources.create_pac();
@@ -412,3 +414,47 @@ async function init() {
 }
 
 init();
+
+const display = document.getElementById('delayDisplay');
+
+function updateDisplay() {
+    // Вывод с лидирующими нулями (01-99)
+    display.textContent = String(100 - frame_delay).padStart(2, '0');
+}
+
+// Кнопка ПЛЮС (хотим быстрее -> уменьшаем задержку)
+document.getElementById('incSpeed').onclick = (e) => {
+    e.stopPropagation();
+    frame_delay = Math.max(1, frame_delay - 1);
+    updateDisplay();
+    e.currentTarget.blur();
+};
+
+// Кнопка МИНУС (хотим медленнее -> увеличиваем задержку)
+document.getElementById('decSpeed').onclick = (e) => {
+    e.stopPropagation();
+    frame_delay = Math.min(99, frame_delay + 1);
+    updateDisplay();
+    e.currentTarget.blur();
+};
+
+const controls = document.querySelectorAll('.btn, .speed-btn');
+
+controls.forEach(btn => {
+    // Останавливаем и клики, и тапы/нажатия
+    const preventStart = (e) => {
+        e.stopPropagation();
+        e.currentTarget.blur();
+    };
+
+    btn.addEventListener('pointerdown', preventStart);
+    btn.addEventListener('click', preventStart);
+});
+
+
+window.setMode = (mode) => {
+    console.log("Режим изменен на:", mode);
+    // Здесь будет логика смены CSS-фильтров или палитр
+};
+
+updateDisplay();

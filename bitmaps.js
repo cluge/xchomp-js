@@ -485,11 +485,23 @@ export const pdie9_bits = [
    0x00, 0x00, 0x00, 0xfe, 0x00, 0xfe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
 
-const canvas = document.getElementById('gameCanvas', { alpha: true });
-const ctx = canvas.getContext('2d');
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: true });
 
 // ========== BITMAP DRAWING FUNCTION (REPLACEMENT FOR XCopyPlane) ==========
-const bitmapCache = new Map();
+let bitmapCache = new Map();
+let background = '#ffffff';
+let foreground = '#000000';
+let isMaterial = false;
+
+import * as main from './main.js';
+
+function changeColors() {
+   canvas.style.setProperty('--bg', background);
+   // foreground используется в логике отрисовки спрайтов (ctx.fillStyle и т.д.)
+   bitmapCache.clear();
+   main.init();
+}
 
 export function drawBitmap(bits, width, height, destX, destY) {
    const key = bits;
@@ -502,13 +514,20 @@ export function drawBitmap(bits, width, height, destX, destY) {
       const data = imgData.data;
       const bytesPerRow = Math.ceil(width / 8);
 
+      // Извлекаем RGB из HEX (foreground)
+      const r = parseInt(foreground.slice(1, 3), 16);
+      const g = parseInt(foreground.slice(3, 5), 16);
+      const b = parseInt(foreground.slice(5, 7), 16);
+
       for (let row = 0; row < height; row++) {
          for (let col = 0; col < width; col++) {
             const byteIndex = row * bytesPerRow + Math.floor(col / 8);
             const isSet = (bits[byteIndex] >> (col % 8)) & 1;
             const idx = (row * width + col) * 4;
 
-            data[idx] = 0; data[idx + 1] = 0; data[idx + 2] = 0;
+            data[idx] = r;
+            data[idx + 1] = g;
+            data[idx + 2] = b;
             data[idx + 3] = isSet ? 255 : 0;
          }
       }
@@ -524,15 +543,37 @@ export function drawBitmap(bits, width, height, destX, destY) {
 
 const fontImage = document.getElementById('fontImage');
 
-export function initFont() {
-   return new Promise((resolve) => {
-      if (fontImage.complete) {
-         resolve();
-      } else {
-         fontImage.onload = resolve;
-         fontImage.onerror = resolve;
-      }
+let fontCanvas = null; // Будем рисовать из него вместо fontImage
+
+export async function initFont() {
+   await new Promise((resolve) => {
+      if (fontImage.complete) resolve();
+      else fontImage.onload = resolve;
    });
+
+   if (!fontCanvas) fontCanvas = document.createElement('canvas');
+   const tCtx = fontCanvas.getContext('2d', { willReadFrequently: true });
+   fontCanvas.width = fontImage.width;
+   fontCanvas.height = fontImage.height;
+   tCtx.drawImage(fontImage, 0, 0);
+
+   const imgData = tCtx.getImageData(0, 0, fontCanvas.width, fontCanvas.height);
+   const d = imgData.data;
+
+   const bg = { r: parseInt(background.slice(1, 3), 16), g: parseInt(background.slice(3, 5), 16), b: parseInt(background.slice(5, 7), 16) };
+   const fg = { r: parseInt(foreground.slice(1, 3), 16), g: parseInt(foreground.slice(3, 5), 16), b: parseInt(foreground.slice(5, 7), 16) };
+
+   for (let i = 0; i < d.length; i += 4) {
+      // Если исходный пиксель белый (>128), красим его в цвет ФОНА (bg)
+      // Если исходный пиксель черный, красим его в цвет ТЕКСТА (fg)
+      const isWhite = d[i] > 128;
+      d[i] = isWhite ? bg.r : fg.r;
+      d[i + 1] = isWhite ? bg.g : fg.g;
+      d[i + 2] = isWhite ? bg.b : fg.b;
+      d[i + 3] = 255;
+   }
+
+   tCtx.putImageData(imgData, 0, 0);
 }
 
 export function drawString(str, x, y) {
@@ -549,14 +590,15 @@ export function drawString(str, x, y) {
          const srcX = (idx % cols) * glyphWidth;
          const srcY = Math.floor(idx / cols) * glyphHeight;
 
-         ctx.drawImage(fontImage, srcX, srcY, glyphWidth, glyphHeight,
+         // Заменяем fontImage на fontCanvas
+         ctx.drawImage(fontCanvas, srcX, srcY, glyphWidth, glyphHeight,
             Math.floor(x + i * glyphWidth), Math.floor(y), glyphWidth, glyphHeight);
       }
    }
 }
 
 export function clearRect(x1, y1, x2, y2) {
-   ctx.fillStyle = '#fff';
+   ctx.fillStyle = background;
    ctx.fillRect(x1, y1, x2, y2);
 }
 
@@ -566,10 +608,76 @@ import * as xc from './xchomp.js';
  * Flash the entire screen using the "difference" composite operation.
  * Used during the end-of-level sequence.
  */
+// Вспомогательная функция для парсинга HEX в массив [R, G, B]
+const hexToRgb = (hex) => {
+   const bigint = parseInt(hex.slice(1), 16);
+   return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+};
+
 export function flash() {
-   ctx.save();
-   ctx.globalCompositeOperation = 'difference';
-   ctx.fillStyle = '#fff';
-   ctx.fillRect(0, 0, xc.WIN_WIDTH, xc.WIN_HEIGHT);
-   ctx.restore();
+   const imgData = ctx.getImageData(0, 0, xc.WIN_WIDTH, xc.WIN_HEIGHT);
+   const data = imgData.data;
+
+   const bg = hexToRgb(background); // background из твоего конфига
+   const fg = hexToRgb(foreground); // foreground из твоего конфига
+
+   for (let i = 0; i < data.length; i += 4) {
+      const r = data[i], g = data[i + 1], b = data[i + 2];
+
+      // Если пиксель похож на background — ставим foreground
+      if (r === bg[0] && g === bg[1] && b === bg[2]) {
+         data[i] = fg[0];
+         data[i + 1] = fg[1];
+         data[i + 2] = fg[2];
+      }
+      // Если пиксель похож на foreground — ставим background
+      else if (r === fg[0] && g === fg[1] && b === fg[2]) {
+         data[i] = bg[0];
+         data[i + 1] = bg[1];
+         data[i + 2] = bg[2];
+      }
+   }
+
+   ctx.putImageData(imgData, 0, 0);
+}
+
+let currentMode = 'bw'; // Стартовый режим
+
+function updateMode(mode, e, colors) {
+   e.stopPropagation();
+   const btn = e.currentTarget;
+
+   if (currentMode === mode) {
+      // Если тот же режим — инвертируем класс и цвета
+      const isInv = btn.classList.toggle(`btn-${mode}-inv`);
+      background = isInv ? colors.fg : colors.bg;
+      foreground = isInv ? colors.bg : colors.fg;
+   } else {
+      // Если новый режим — сбрасываем старый (визуально) и ставим дефолт нового
+      document.querySelectorAll('.speed-btn').forEach(b => {
+         // Удаляем все классы инверсии у всех кнопок
+         b.classList.remove('btn-split-bw-inv', 'btn-green-inv', 'btn-material-inv');
+      });
+      currentMode = mode;
+      background = colors.bg;
+      foreground = colors.fg;
+   }
+
+   btn.blur();
+   changeColors();
+}
+
+document.querySelector('.btn-split-bw').onclick = (e) =>
+   updateMode('bw', e, { bg: '#ffffff', fg: '#000000' });
+
+document.querySelector('.btn-green').onclick = (e) =>
+   updateMode('green', e, { bg: '#00220a', fg: '#00cc33' });
+
+document.querySelector('.btn-material').onclick = (e) =>
+   updateMode('material', e, { bg: '#102027', fg: '#66BB6A' });
+
+export function toggleThemeButtons(enabled) {
+   // Выбираем только кнопки тем, не трогаем кнопки скорости
+   document.querySelectorAll('.btn-split-bw, .btn-green, .btn-material')
+      .forEach(btn => btn.disabled = !enabled);
 }
