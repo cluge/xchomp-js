@@ -505,6 +505,7 @@ import * as main from './main.js';
 
 function changeColors() {
    canvas.style.setProperty('--bg', background);
+   // foreground used in sprite drawing logic (ctx.fillStyle etc.)
    bitmapCache.clear();
    main.init();
 }
@@ -520,6 +521,7 @@ export function drawBitmap(bits, width, height, destX, destY) {
       const data = imgData.data;
       const bytesPerRow = Math.ceil(width / 8);
 
+      // Determine color based on bitmap type
       let color = foreground;
       if (isMaterial) {
          if (PAC_BITMAPS.includes(bits)) {
@@ -561,8 +563,7 @@ export function drawBitmap(bits, width, height, destX, destY) {
 }
 
 const fontImage = document.getElementById('fontImage');
-
-let fontCanvas = null;
+let fontCanvas = null; // We'll draw from this instead of fontImage
 
 export async function initFont() {
    await new Promise((resolve) => {
@@ -583,6 +584,8 @@ export async function initFont() {
    const fg = { r: parseInt(foreground.slice(1, 3), 16), g: parseInt(foreground.slice(3, 5), 16), b: parseInt(foreground.slice(5, 7), 16) };
 
    for (let i = 0; i < d.length; i += 4) {
+      // If source pixel is white (>128), color it with BACKGROUND (bg)
+      // If source pixel is black, color it with FOREGROUND (fg)
       const isWhite = d[i] > 128;
       d[i] = isWhite ? bg.r : fg.r;
       d[i + 1] = isWhite ? bg.g : fg.g;
@@ -607,7 +610,7 @@ export function drawString(str, x, y) {
          const srcX = (idx % cols) * glyphWidth;
          const srcY = Math.floor(idx / cols) * glyphHeight;
 
-         // Заменяем fontImage на fontCanvas
+         // Replace fontImage with fontCanvas
          ctx.drawImage(fontCanvas, srcX, srcY, glyphWidth, glyphHeight,
             Math.floor(x + i * glyphWidth), Math.floor(y), glyphWidth, glyphHeight);
       }
@@ -625,7 +628,6 @@ import * as xc from './xchomp.js';
  * Flash the entire screen using the "difference" composite operation.
  * Used during the end-of-level sequence.
  */
-// Вспомогательная функция для парсинга HEX в массив [R, G, B]
 const hexToRgb = (hex) => {
    const bigint = parseInt(hex.slice(1), 16);
    return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
@@ -635,19 +637,19 @@ export function flash() {
    const imgData = ctx.getImageData(0, 0, xc.WIN_WIDTH, xc.WIN_HEIGHT);
    const data = imgData.data;
 
-   const bg = hexToRgb(background); // background из твоего конфига
-   const fg = hexToRgb(foreground); // foreground из твоего конфига
+   const bg = hexToRgb(background);
+   const fg = hexToRgb(foreground);
 
    for (let i = 0; i < data.length; i += 4) {
       const r = data[i], g = data[i + 1], b = data[i + 2];
 
-      // Если пиксель похож на background — ставим foreground
+      // If pixel matches background, set to foreground
       if (r === bg[0] && g === bg[1] && b === bg[2]) {
          data[i] = fg[0];
          data[i + 1] = fg[1];
          data[i + 2] = fg[2];
       }
-      // Если пиксель похож на foreground — ставим background
+      // If pixel matches foreground, set to background
       else if (r === fg[0] && g === fg[1] && b === fg[2]) {
          data[i] = bg[0];
          data[i + 1] = bg[1];
@@ -658,23 +660,21 @@ export function flash() {
    ctx.putImageData(imgData, 0, 0);
 }
 
-let currentMode = 'material'; // Стартовый режим
+let currentMode = 'material'; // Start in material mode
 
 function updateMode(mode, e, colors) {
    e.stopPropagation();
    const btn = e.currentTarget;
-   isMaterial = false;   // <-- сброс флага material
-
+   isMaterial = false;   // Reset material flag
 
    if (currentMode === mode) {
-      // Если тот же режим — инвертируем класс и цвета
+      // Same mode: toggle inversion
       const isInv = btn.classList.toggle(`btn-${mode}-inv`);
       background = isInv ? colors.fg : colors.bg;
       foreground = isInv ? colors.bg : colors.fg;
    } else {
-      // Если новый режим — сбрасываем старый (визуально) и ставим дефолт нового
+      // New mode: reset old inversion and set default
       document.querySelectorAll('.speed-btn').forEach(b => {
-         // Удаляем все классы инверсии у всех кнопок
          b.classList.remove('btn-bw-inv', 'btn-green-inv');
       });
       currentMode = mode;
@@ -709,7 +709,7 @@ document.querySelector('.btn-material').onclick = (e) => {
 };
 
 export function toggleThemeButtons(enabled) {
-   // Выбираем только кнопки тем, не трогаем кнопки скорости
+   // Only theme buttons, not speed controls
    document.querySelectorAll('.btn-bw, .btn-green, .btn-material')
       .forEach(btn => btn.disabled = !enabled);
 }
@@ -717,7 +717,7 @@ export function toggleThemeButtons(enabled) {
 const controls = document.querySelectorAll('.btn, .speed-btn');
 
 controls.forEach(btn => {
-   // Останавливаем и клики, и тапы/нажатия
+   // Stop both clicks and taps/presses
    const preventStart = (e) => {
       e.stopPropagation();
       e.currentTarget.blur();
