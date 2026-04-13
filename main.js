@@ -10,7 +10,7 @@ import * as bm from './bitmaps.js';
 
 let animationFrame = null;
 let game_active = false;
-let frame_delay = 33;
+let frame_delay = 50;
 
 // Flashing ghost tables (from C code)
 const flash_ticks = [
@@ -110,7 +110,6 @@ async function game_proc() {
     }
 
     if (xc.state.isEatScore) {
-        // if (animationFrame) cancelAnimationFrame(animationFrame);
         cancelAnimationFrame(animationFrame);
         await new Promise(resolve => setTimeout(resolve, 1000));
         cnct.eat_end();
@@ -242,6 +241,8 @@ async function start_demo() {
 
     demo.demo_seq();
 
+    const canvas = document.getElementById('gameCanvas');
+
     await new Promise((resolve) => {
         const onKeyDown = (e) => {
             // ignore modifier keys
@@ -264,20 +265,20 @@ async function start_demo() {
             // any other key starts the game
             const key = e.key;
             if (key && !['Control', 'Alt', 'Shift', 'Meta', 'OS'].includes(key)) {
-                window.removeEventListener('pointerdown', onPointerDown);
                 window.removeEventListener('keydown', onKeyDown);
+                canvas.removeEventListener('pointerdown', onPointerDown);
                 window.addEventListener('keydown', handleKeyDown);
                 resolve('start');
             }
         };
         const onPointerDown = (e) => {
-            window.removeEventListener('pointerdown', onPointerDown);
             window.removeEventListener('keydown', onKeyDown);
+            canvas.removeEventListener('pointerdown', onPointerDown);
             window.addEventListener('keydown', handleKeyDown);
             resolve('start');
         };
         window.addEventListener('keydown', onKeyDown);
-        window.addEventListener('pointerdown', onPointerDown);
+        canvas.addEventListener('pointerdown', onPointerDown);
     }).then((result) => {
         if (result === 'start') {
             start_game();
@@ -344,10 +345,17 @@ const minSwipeDistance = 20;
 window.addEventListener('touchstart', (e) => {
     touchStartX = e.changedTouches[0].screenX;
     touchStartY = e.changedTouches[0].screenY;
-    touchStartTime = Date.now(); // Запоминаем время касания
+    touchStartTime = Date.now();
 }, { passive: false });
 
 window.addEventListener('touchend', (e) => {
+    const target = e.target;
+    if (target.id === 'gameCanvas' || target.closest('canvas')) {
+        if (!game_active) {
+            return; // In demo mode, canvas.onpointerdown will start the game
+        }
+    }
+
     const touchEndTime = Date.now();
     const touchDuration = touchEndTime - touchStartTime;
 
@@ -358,23 +366,18 @@ window.addEventListener('touchend', (e) => {
     const dy = touchEndY - touchStartY;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    // 1. Если игра в демо-режиме — любой тап/свайп запускает игру
-    if (!game_active) {
-        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
-        return;
-    }
-
-    // 2. Если это короткий тап (меньше 200мс и почти без движения) — ПАУЗА
+    // Short tap: pause
     if (touchDuration < 200 && distance < 10) {
         isPaused = !isPaused;
         props.pause_seq(isPaused);
         if (!isPaused) {
-            animationFrame = requestAnimationFrame(game_proc);
+            tickStartTime = Date.now();
+            animationFrame = requestAnimationFrame(game_loop);
         }
         return;
     }
 
-    // 3. Если это свайп — ПОВОРОТ
+    // Swipe: change direction
     if (distance > minSwipeDistance) {
         if (Math.abs(dx) > Math.abs(dy)) {
             xc.state.last_key = dx > 0 ? 'ArrowRight' : 'ArrowLeft';
@@ -394,6 +397,13 @@ window.addEventListener('touchmove', (e) => {
  * player pressed Space — the game stays paused until they unpause
  * manually.
  */
+window.addEventListener('blur', () => {
+    if (!game_active || isPaused) return;
+    
+    isPaused = true;
+    props.pause_seq(true);
+});
+
 document.addEventListener('visibilitychange', () => {
     if (!game_active || isPaused) return;
 
@@ -418,11 +428,11 @@ init();
 const display = document.getElementById('delayDisplay');
 
 function updateDisplay() {
-    // Вывод с лидирующими нулями (01-99)
+    // Display with leading zeros (01-99)
     display.textContent = String(100 - frame_delay).padStart(2, '0');
 }
 
-// Кнопка ПЛЮС (хотим быстрее -> уменьшаем задержку)
+// Increase speed button
 document.getElementById('incSpeed').onclick = (e) => {
     e.stopPropagation();
     frame_delay = Math.max(1, frame_delay - 1);
@@ -430,7 +440,7 @@ document.getElementById('incSpeed').onclick = (e) => {
     e.currentTarget.blur();
 };
 
-// Кнопка МИНУС (хотим медленнее -> увеличиваем задержку)
+// Decrease speed button
 document.getElementById('decSpeed').onclick = (e) => {
     e.stopPropagation();
     frame_delay = Math.min(99, frame_delay + 1);
@@ -441,7 +451,6 @@ document.getElementById('decSpeed').onclick = (e) => {
 const controls = document.querySelectorAll('.btn, .speed-btn');
 
 controls.forEach(btn => {
-    // Останавливаем и клики, и тапы/нажатия
     const preventStart = (e) => {
         e.stopPropagation();
         e.currentTarget.blur();
@@ -451,10 +460,8 @@ controls.forEach(btn => {
     btn.addEventListener('click', preventStart);
 });
 
-
 window.setMode = (mode) => {
-    console.log("Режим изменен на:", mode);
-    // Здесь будет логика смены CSS-фильтров или палитр
+    console.log("Mode changed to:", mode);
 };
 
 updateDisplay();

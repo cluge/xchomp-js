@@ -485,20 +485,26 @@ export const pdie9_bits = [
    0x00, 0x00, 0x00, 0xfe, 0x00, 0xfe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
 
+export let PAC_BITMAPS = [bigc_bits, bigh_bits, bigm_bits, bigo_bits, bigp_bits, pacd1_bits, pacd2_bits, pacd3_bits, pacl1_bits, pacl2_bits, pacl3_bits, pacl4_bits, pacr1_bits, pacr2_bits, pacr3_bits, pacu1_bits, pacu2_bits, pacu3_bits, pacsmall_bits, pdie4_bits, pdie5_bits, pdie6_bits, pdie7_bits, pdie8_bits, pdie9_bits, pdie10_bits];
+const GHOST_BITMAPS = [frame1_bits, frame2_bits, frame3_bits, grey1_bits, grey2_bits, grey3_bits, eye_bits];
+const FRUIT_BITMAPS = [fcherry_bits, fstraw_bits, fwater_bits, fapple_bits, fgrape_bits, fbell_bits, fclock_bits, fxlogo_bits, fkey_bits];
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: true });
 
 // ========== BITMAP DRAWING FUNCTION (REPLACEMENT FOR XCopyPlane) ==========
 let bitmapCache = new Map();
-let background = '#ffffff';
-let foreground = '#000000';
-let isMaterial = false;
+let background = '#102027';
+let foreground = '#66BB6A';
+
+let isMaterial = true;
+const pacColor = '#FFD54F';
+const ghostColor = '#42A5F5';
 
 import * as main from './main.js';
 
 function changeColors() {
    canvas.style.setProperty('--bg', background);
-   // foreground используется в логике отрисовки спрайтов (ctx.fillStyle и т.д.)
    bitmapCache.clear();
    main.init();
 }
@@ -514,10 +520,23 @@ export function drawBitmap(bits, width, height, destX, destY) {
       const data = imgData.data;
       const bytesPerRow = Math.ceil(width / 8);
 
-      // Извлекаем RGB из HEX (foreground)
-      const r = parseInt(foreground.slice(1, 3), 16);
-      const g = parseInt(foreground.slice(3, 5), 16);
-      const b = parseInt(foreground.slice(5, 7), 16);
+      let color = foreground;
+      if (isMaterial) {
+         if (PAC_BITMAPS.includes(bits)) {
+            color = pacColor;
+         } else if (GHOST_BITMAPS.includes(bits)) {
+            color = ghostColor;
+         } else if (bits === mdot_bits) {
+            color = '#4dd0e1';
+         } else if (bits === mpower_bits) {
+            color = '#EA8686';
+         } else if (FRUIT_BITMAPS.includes(bits)) {
+            color = '#BA68C8';
+         }
+      }
+      const r = parseInt(color.slice(1, 3), 16);
+      const g = parseInt(color.slice(3, 5), 16);
+      const b = parseInt(color.slice(5, 7), 16);
 
       for (let row = 0; row < height; row++) {
          for (let col = 0; col < width; col++) {
@@ -543,7 +562,7 @@ export function drawBitmap(bits, width, height, destX, destY) {
 
 const fontImage = document.getElementById('fontImage');
 
-let fontCanvas = null; // Будем рисовать из него вместо fontImage
+let fontCanvas = null;
 
 export async function initFont() {
    await new Promise((resolve) => {
@@ -564,8 +583,6 @@ export async function initFont() {
    const fg = { r: parseInt(foreground.slice(1, 3), 16), g: parseInt(foreground.slice(3, 5), 16), b: parseInt(foreground.slice(5, 7), 16) };
 
    for (let i = 0; i < d.length; i += 4) {
-      // Если исходный пиксель белый (>128), красим его в цвет ФОНА (bg)
-      // Если исходный пиксель черный, красим его в цвет ТЕКСТА (fg)
       const isWhite = d[i] > 128;
       d[i] = isWhite ? bg.r : fg.r;
       d[i + 1] = isWhite ? bg.g : fg.g;
@@ -641,11 +658,13 @@ export function flash() {
    ctx.putImageData(imgData, 0, 0);
 }
 
-let currentMode = 'bw'; // Стартовый режим
+let currentMode = 'material'; // Стартовый режим
 
 function updateMode(mode, e, colors) {
    e.stopPropagation();
    const btn = e.currentTarget;
+   isMaterial = false;   // <-- сброс флага material
+
 
    if (currentMode === mode) {
       // Если тот же режим — инвертируем класс и цвета
@@ -656,7 +675,7 @@ function updateMode(mode, e, colors) {
       // Если новый режим — сбрасываем старый (визуально) и ставим дефолт нового
       document.querySelectorAll('.speed-btn').forEach(b => {
          // Удаляем все классы инверсии у всех кнопок
-         b.classList.remove('btn-split-bw-inv', 'btn-green-inv', 'btn-material-inv');
+         b.classList.remove('btn-bw-inv', 'btn-green-inv');
       });
       currentMode = mode;
       background = colors.bg;
@@ -667,17 +686,43 @@ function updateMode(mode, e, colors) {
    changeColors();
 }
 
-document.querySelector('.btn-split-bw').onclick = (e) =>
+document.querySelector('.btn-bw').onclick = (e) =>
    updateMode('bw', e, { bg: '#ffffff', fg: '#000000' });
 
 document.querySelector('.btn-green').onclick = (e) =>
    updateMode('green', e, { bg: '#00220a', fg: '#00cc33' });
 
-document.querySelector('.btn-material').onclick = (e) =>
-   updateMode('material', e, { bg: '#102027', fg: '#66BB6A' });
+document.querySelector('.btn-material').onclick = (e) => {
+   e.stopPropagation();
+   const btn = e.currentTarget;
+
+   document.querySelectorAll('.speed-btn').forEach(b => {
+      b.classList.remove('btn-bw-inv', 'btn-green-inv');
+   });
+
+   currentMode = 'material';
+   isMaterial = true;
+   background = '#102027';
+   foreground = '#66BB6A';
+   btn.blur();
+   changeColors();
+};
 
 export function toggleThemeButtons(enabled) {
    // Выбираем только кнопки тем, не трогаем кнопки скорости
-   document.querySelectorAll('.btn-split-bw, .btn-green, .btn-material')
+   document.querySelectorAll('.btn-bw, .btn-green, .btn-material')
       .forEach(btn => btn.disabled = !enabled);
 }
+
+const controls = document.querySelectorAll('.btn, .speed-btn');
+
+controls.forEach(btn => {
+   // Останавливаем и клики, и тапы/нажатия
+   const preventStart = (e) => {
+      e.stopPropagation();
+      e.currentTarget.blur();
+   };
+
+   btn.addEventListener('pointerdown', preventStart);
+   btn.addEventListener('click', preventStart);
+});

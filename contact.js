@@ -97,6 +97,12 @@ export function eat(i) {
         }
     }
 
+    if (xc.state.fruit_shown && xc.state.fruitFrame !== null) {
+        bm.drawBitmap(xc.state.fruitFrame, xc.state.fruitSize[0],
+            xc.state.fruitSize[1], xc.state.fruit_x - 2, xc.state.fruit_y);
+    }
+
+
     // Draw the score value (eat_pix[eat_index]) at the player's position
     const scoreFrame = xc.state.eat_pix[xc.state.eat_index];
     bm.drawBitmap(scoreFrame, xc.GHOST_SIZE, xc.GHOST_SIZE, xx, yy);

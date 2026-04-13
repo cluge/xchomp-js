@@ -41,7 +41,7 @@
             max-width: 95vw;
             height: auto;
             image-rendering: pixelated;
-            background: var(--bg, #fff);
+            background: var(--bg, #102027);
             touch-action: none;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
@@ -99,7 +99,7 @@
             /* Чтобы цифры не прыгали */
             color: #00ff41;
             /* Тот самый зеленый для современности */
-            min-width: 70px;
+            min-width: 50px;
             text-align: center;
         }
 
@@ -107,11 +107,11 @@
             outline: none;
         }
 
-        .btn-split-bw {
-            background: linear-gradient(90deg, #fff 50%, #000 50%);
+        .btn-bw {
+            background: linear-gradient(90deg, #fff 50%, #000 50%) !important;
         }
 
-        .btn-split-bw-inv {
+        .btn-bw-inv {
             background: linear-gradient(90deg, #000 50%, #fff 50%) !important;
         }
 
@@ -125,12 +125,16 @@
         }
 
         .btn-material {
-            /* Фон слева (темно-синий), Спрайты справа (зеленый) */
-            background: linear-gradient(90deg, #102027 50%, #66BB6A 50%) !important;
+            background: linear-gradient(90deg,
+                    #FFD54F 0%, #FFD54F 20%,
+                    #42A5F5 20%, #42A5F5 40%,
+                    #4dd0e1 40%, #4dd0e1 60%,
+                    #EA8686 60%, #EA8686 80%,
+                    #102027 80%, #102027 100%) !important;
         }
 
-        .btn-material-inv {
-            background: linear-gradient(90deg, #66BB6A 50%, #102027 50%) !important;
+        .btn-speed:hover {
+            filter: brightness(1.1);
         }
 
         .speed-btn:disabled {
@@ -145,7 +149,7 @@
     <div class="section">
         <div class="section">
             <div class="speed-control">
-                <button class="speed-btn btn-split-bw"></button>
+                <button class="speed-btn btn-bw"></button>
                 <button class="speed-btn btn-green"></button>
                 <button class="speed-btn btn-material"></button>
             </div>

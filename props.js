@@ -79,6 +79,7 @@ let power_flash = false;
 
 export function flash_power_dots() {
     if (xc.state.count === 0) power_flash = !power_flash;
+    if (xc.state.count === -1) power_flash = true;
 
     if (power_flash) {
         for (let row = 0; row < xc.BLOCK_HEIGHT; row++) {

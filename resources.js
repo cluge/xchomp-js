@@ -134,6 +134,9 @@ export function create_pac() {
     xc.state.dead_prot[10] = bm.pdie10_bits;
 
     create_death_animations();
+    Array.prototype.push.apply(bm.PAC_BITMAPS, xc.state.rdeadpac);
+    Array.prototype.push.apply(bm.PAC_BITMAPS, xc.state.udeadpac);
+    Array.prototype.push.apply(bm.PAC_BITMAPS, xc.state.ddeadpac);
 
     xc.state.small_pac = bm.pacsmall_bits;
 }
