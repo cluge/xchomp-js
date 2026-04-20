@@ -100,6 +100,8 @@ async function game_proc() {
                         xc.state.ghost[i] = xc.state.bghost;
                         xc.state.ix[i] *= 2;
                         xc.state.iy[i] *= 2;
+                        xc.state.x[i] &= ~1;
+                        xc.state.y[i] &= ~1;
                     }
                     else if (xc.state.ghost[i] === xc.state.fghost || xc.state.ghost[i] === xc.state.gghost) {
                         xc.state.ghost[i] = xc.state.bghost;
@@ -112,8 +114,8 @@ async function game_proc() {
     if (xc.state.isEatScore) {
         cancelAnimationFrame(animationFrame);
         await new Promise(resolve => setTimeout(resolve, 1000));
-        cnct.eat_end();
-        tickStartTime = Date.now();
+        xc.state.isEatScore = false;
+        tickStartTime += 1000;
         animationFrame = requestAnimationFrame(game_loop);
     }
 
@@ -153,11 +155,18 @@ async function game_proc() {
 }
 
 function game_loop() {
-    const curTime = Date.now()
-    if (curTime - tickStartTime >= frame_delay) {
-        tickStartTime += frame_delay;
+    const curTime = Date.now();
+    const elapsed = curTime - tickStartTime;
+
+    if (elapsed >= frame_delay) {
+        if (elapsed > frame_delay * 2) {
+            tickStartTime = curTime;
+        } else {
+            tickStartTime += frame_delay;
+        }
         game_proc();
     }
+
     if (!xc.state.isEatScore) {
         animationFrame = requestAnimationFrame(game_loop);
     }
@@ -290,35 +299,31 @@ let isPaused = false;
 
 function handleKeyDown(e) {
     // Q in active game: return to demo
-    if (e.key === 'q' || e.key === 'Q') {
+    if (e.code === 'KeyQ') {
         e.preventDefault();
         start_demo();
         return;
     }
 
     let mappedKey = null;
-    switch (e.key) {
+    switch (e.code) {
         case 'ArrowUp':
-        case 'w':
-        case 'W':
+        case 'KeyW':
             mappedKey = 'ArrowUp';
             break;
         case 'ArrowDown':
-        case 's':
-        case 'S':
+        case 'KeyS':
             mappedKey = 'ArrowDown';
             break;
         case 'ArrowLeft':
-        case 'a':
-        case 'A':
+        case 'KeyA':
             mappedKey = 'ArrowLeft';
             break;
         case 'ArrowRight':
-        case 'd':
-        case 'D':
+        case 'KeyD':
             mappedKey = 'ArrowRight';
             break;
-        case ' ':
+        case 'Space':
             e.preventDefault();
             isPaused = !isPaused;
             props.pause_seq(isPaused);

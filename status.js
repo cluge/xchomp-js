@@ -11,11 +11,17 @@ import * as bm from './bitmaps.js';
  * Update and display the current score on the status line.
  */
 export function print_score(incr) {
-    xc.state.score += incr;
-
+    let sc;
+    if (xc.state.score < 10000) {
+        if ((sc = xc.state.score + incr) >= 10000) {
+            set_lives(xc.state.lives + 1);
+        }
+        xc.state.score = sc;
+    } else {
+        xc.state.score += incr;
+    }
     // Format score as 6-digit string with leading zeros
     const str = (xc.state.score).toString().padStart(6, '0');
-
     const textHeight = 13;
     const y = xc.WIN_HEIGHT + (xc.GHOST_SIZE + 2 - textHeight) / 2;
     bm.drawString(str, 6, y);

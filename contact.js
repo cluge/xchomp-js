@@ -3,6 +3,7 @@ import * as maze from './maze.js';
 import * as bm from './bitmaps.js';
 import * as drv from './drivers.js';
 import * as sts from './status.js';
+import * as cntc from './contact.js';
 
 /*
  * The following function is called when the player collides with
@@ -88,6 +89,12 @@ export function eat(i) {
     const xx = xc.state.x[xc.PAC_SLOT];
     const yy = xc.state.y[xc.PAC_SLOT];
 
+    xc.state.ghost[i] = xc.state.eghost;
+    xc.state.drive[i] = drv.go_home;
+    xc.state.contact[i] = cntc.noop;
+    xc.state.x[i] &= ~3;
+    xc.state.y[i] &= ~3;
+
     // Draw all ghosts except the one being eaten, and draw the score value
     maze.draw_maze();
     for (let j = 0; j < xc.PAC_SLOT; j++) {
@@ -110,28 +117,13 @@ export function eat(i) {
     // Adjust the score and update the eat index
     sts.print_score(eat_values[xc.state.eat_index]);
     xc.state.eat_index = (xc.state.eat_index + 1) & 0x03;
-
-    // Store the ghost index for later processing in eat_end()
-    xc.state.eatGhostIndex = i;
 }
 
+
 /*
- * Completes the ghost-eating sequence:
- * - Removes all moving figures
- * - Transforms the eaten ghost into harmless eyes seeking to return home
+ * The following is the collision handler for ghost-eyes.
+ * The eyes are harmless; this is a no-op.
  */
-export function eat_end() {
-    // Remove all moving figures from the map
-    maze.draw_maze();
-
-    // Change the ghost state to eyes returning to the ghost box
-    xc.state.ghost[xc.state.eatGhostIndex] = xc.state.eghost;
-    xc.state.drive[xc.state.eatGhostIndex] = drv.go_home;
-    xc.state.contact[xc.state.eatGhostIndex] = drv.noop;
-
-    // Align coordinates to even numbers for smooth movement
-    xc.state.x[xc.state.eatGhostIndex] &= ~3;
-    xc.state.y[xc.state.eatGhostIndex] &= ~3;
-
-    xc.state.isEatScore = false;
+export function noop(i) {
+    // nothing to do
 }

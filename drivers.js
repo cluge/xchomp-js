@@ -165,6 +165,7 @@ export function control_pac() {
 
     // check for a collision
     for (let i = 0; i < xc.PAC_SLOT; i++) {
+        if (xc.state.isEatScore) break;
         const dx = xc.state.x[i] - xx;
         const dy = xc.state.y[i] - yy;
         if ((Math.abs(dx) < 6) && (Math.abs(dy) < 6)) {
@@ -543,18 +544,30 @@ export function go_home(i) {
             xc.state.ix[i] = 0;
             xc.state.iy[i] = 4;
             return;
+        } else if (yy === (pmy + 48)) {
+            let occupied = false;
+            for (let j = 0; j < xc.PAC_SLOT; j++) {
+                if (j !== i && xc.state.drive[j] === hover &&
+                    Math.abs(xc.state.x[j] - pmx) < 8) {
+                    occupied = true;
+                    break;
+                }
+            }
+            if (occupied) {
+                xc.state.ix[i] = 0;
+                xc.state.iy[i] = 0;
+                return;
+            } else {
+                xc.state.drive[i] = hover;
+                xc.state.loops[i] = 0;
+                xc.state.ghost[i] = xc.state.bghost;
+                xc.state.contact[i] = cnct.noop;
+                xc.state.ix[i] = 2;
+                xc.state.iy[i] = 0;
+                return;
+            }
         }
-        else if (yy === (pmy + 48)) {
-            xc.state.drive[i] = hover;
-            xc.state.loops[i] = 0;
-            xc.state.ghost[i] = xc.state.bghost;
-            xc.state.contact[i] = cnct.die;
-            xc.state.ix[i] = 2;
-            xc.state.iy[i] = 0;
-            return;
-        }
-    }
-    else {
+    } else {
         if (xc.state.md[row] && xc.state.md[row][col + 1] && xc.state.md[row][col + 1] !== '\0' || px < 0) dir &= ~0x01;
         if (xc.state.md[row] && xc.state.md[row][col - 1] && xc.state.md[row][col - 1] !== '\0' || px > 0) dir &= ~0x02;
         if (xc.state.md[row + 1] && xc.state.md[row + 1][col] && xc.state.md[row + 1][col] !== '\0' || py < 0) dir &= ~0x04;
@@ -571,12 +584,4 @@ export function go_home(i) {
             xc.state.iy[i] = pyvec[dir][0];
         }
     }
-}
-
-/*
- * The following is the collision handler for ghost-eyes.
- * The eyes are harmless; this is a no-op.
- */
-export function noop(i) {
-    // nothing to do
 }

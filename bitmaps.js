@@ -490,7 +490,7 @@ const GHOST_BITMAPS = [frame1_bits, frame2_bits, frame3_bits, grey1_bits, grey2_
 const FRUIT_BITMAPS = [fcherry_bits, fstraw_bits, fwater_bits, fapple_bits, fgrape_bits, fbell_bits, fclock_bits, fxlogo_bits, fkey_bits];
 
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: true });
+const ctx = canvas.getContext('2d', { alpha: true });
 
 // ========== BITMAP DRAWING FUNCTION (REPLACEMENT FOR XCopyPlane) ==========
 let bitmapCache = new Map();
