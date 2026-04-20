@@ -1,65 +1,65 @@
-# XChomp – Веб-порт
+# XChomp – Web Port
 
-![Превью игры XChomp](xchomp.gif)
+![XChomp Gameplay Preview](xchomp.gif)
 
-### [🎮 Играть онлайн](https://cluge.github.io/xchomp-js/xchomp.html)
+### [🎮 Play Online](https://cluge.github.io/xchomp-js/xchomp.html)
 
-Классическая аркада в стиле Pac-Man™, портированная с оригинальной X11-версии Jerry J. Shekhel (1990) на современный JavaScript/Canvas.  
-Игра полностью автономна и собрана в один HTML-файл (`xchomp.html`) – никаких внешних зависимостей, сервер не требуется.
+Classic Pac-Man™-style arcade game, ported from Jerry J. Shekhel's original X11 version (1990) to modern JavaScript/Canvas.  
+The game is fully self‑contained in a single HTML file (`xchomp.html`) – no external dependencies, no server required.
 
-## Управление
+## Controls
 
-- **Стрелки** или **W/A/S/D** – движение вверх, вниз, влево, вправо  
-- **Пробел** – пауза / продолжить  
-- **Q** – выход на заглавный экран
+- **Arrow keys** or **W/A/S/D** – move up, down, left, right  
+- **Space** – pause / unpause  
+- **Q** – quit to title screen
 
-> Игра запоминает последнюю нажатую клавишу направления. Пакман повернёт, как только это станет возможным.
+> The game remembers the last pressed direction. Pac‑Man will turn as soon as the new direction becomes possible.
 
-## Цель игры
+## Objective
 
-Съешьте все точки на лабиринте, чтобы перейти на следующий уровень.  
-Большие точки (power‑dots) дают временную возможность поедать привидений.  
-Фрукты появляются дважды за уровень и приносят бонусные очки.
+Eat all dots on each maze to advance to the next level.  
+Collect power‑dots to temporarily become able to eat ghosts.  
+Fruits appear twice per level and give bonus points.
 
-- Обычная точка – **10 очков**  
-- Энерджайзер (power‑dot) – **50 очков** + режим поедания привидений  
-- Съеденное привидение – **200, 400, 800 или 1600 очков**  
-- Фрукт – зависит от уровня (до 5000 очков)
+- Regular dot – **10 points**  
+- Power‑dot – **50 points** + ghost‑eating mode  
+- Ghost (while edible) – **200, 400, 800, or 1600 points**  
+- Fruit – varies by level (up to 5000 points)
 
-## Жизни и уровни
+## Lives & Levels
 
-- Начальное количество жизней – **3**.  
-- Дополнительная жизнь даётся при достижении **10 000 очков**.  
-- Доступно **6 различных лабиринтов**, которые циклически повторяются по мере прохождения.  
-- После завершения уровня экран мигает, и вы переходите к следующему лабиринту.
+- Start with **3 lives**.  
+- Extra life awarded at **10,000 points**.  
+- **6 different mazes** that cycle as you progress.  
+- After clearing a maze, the screen flashes and you advance.
 
-## Как запустить
+## How to Run
 
-1. Получите файл **`xchomp.html`** любым удобным способом.  
-2. Откройте его двойным щелчком в любом современном браузере (Chrome, Firefox, Edge, Safari).
+1. Obtain the file **`xchomp.html`**.  
+2. Double‑click it (or open with any modern browser: Chrome, Firefox, Edge, Safari).  
 
-> Чтобы собрать `xchomp.html` из исходников, выполните `./build.sh` (требуется Node.js, npm, vite и плагин vite-plugin-singlefile).
+> To rebuild `xchomp.html` from source, run `./build.sh` (requires npm, vite and vite-plugin-singlefile).
 
-## Особенности порта
+## Port Features
 
-- Полностью сохранена оригинальная логика движения привидений (follow, run, go home, hover).  
-- Пиксельная графика 16×16 спрайтов, отрисованная на Canvas.  
-- Анимация смерти Пакмана поворачивается в соответствии с его направлением.  
-- Пауза по пробелу, выход в демо-режим по Q.  
-- Все статусные сообщения (`READY!`, `GAME OVER`, счёт, жизни, уровень) воспроизведены точно как в оригинале.
+- Preserves original ghost AI (follow, run, go home, hover).  
+- Pixel‑perfect 16×16 sprites rendered on Canvas.  
+- Death animation rotates to match Pac‑Man's facing direction.  
+- Pause on Space, exit to demo on Q.  
+- All status messages (`READY!`, `GAME OVER`, score, lives, level) match the original.
 
-## История
+## History
 
-Jerry J. Shekhel написал оригинальный `xchomp` в 1990 году для X Window System и передал его в общественное достояние.  
-Этот JavaScript‑порт сохраняет геймплей, последовательности и даже имена переменных оригинала в дань уважения классической игре.
+Jerry J. Shekhel wrote the original `xchomp` in 1990 for X11 and placed it in the public domain.  
+This JavaScript port keeps the gameplay, sequences, and even variable names to honor the classic.
 
-## Благодарности
+## Credits
 
-- Jerry J. Shekhel – оригинальная игра  
-- Karl Asha – заметки по компиляции под Linux  
-- Всем, кто тестировал веб-версию
+- Jerry J. Shekhel – original game  
+- Karl Asha – Linux compilation notes  
+- Web port testers
 
 ---
 
-**Приятной игры!**  
-*Если вы нашли ошибку или хотите предложить улучшение — создавайте issue или pull request.*
+**Enjoy!**  
+*If you find a bug or have a suggestion, please open an issue or pull request.*
